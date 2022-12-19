@@ -42,13 +42,16 @@ func deleteOldFiles(directory string, someDaysAgo time.Time) error {
 
 func main() {
 	if len(os.Args) != 3 {
-		log.Fatal("Usage: daily-temp <days> <directory>")
+		fmt.Println("Usage: daily-temp <days> <directory>")
+		fmt.Println("The first parameter is the days that we wont to keep files. Minimum 1. As single integer. Modification time.")
+		log.Fatal("Parameter error, Exit.")
 	}
+
 	keepDays := os.Args[1]
 
 	keepDaysInt, err := strconv.ParseInt(keepDays, 10, 64)
 	if err != nil {
-		fmt.Println("The first parameter is the days that we wont to keep files. Minimum 1. As single integer.")
+		fmt.Println("The first parameter is the days that we wont to keep files. Minimum 1. As single integer. Modification timestamp.")
 	}
 
 	directory := os.Args[2]
