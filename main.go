@@ -9,16 +9,16 @@ import (
 	"time"
 )
 
-func deleteOldFiles(directory string, twoDaysAgo time.Time) error {
+func deleteOldFiles(directory string, someDaysAgo time.Time) error {
 	files, err := ioutil.ReadDir(directory)
 	if err != nil {
 		return err
 	}
 
 	for _, file := range files {
-		if file.ModTime().Truncate(24 * time.Hour).Before(twoDaysAgo) {
+		if file.ModTime().Truncate(24 * time.Hour).Before(someDaysAgo) {
 			if file.IsDir() {
-				err := deleteOldFiles(directory+"/"+file.Name(), twoDaysAgo)
+				err := deleteOldFiles(directory+"/"+file.Name(), someDaysAgo)
 				if err != nil {
 					return err
 				}
@@ -42,13 +42,13 @@ func deleteOldFiles(directory string, twoDaysAgo time.Time) error {
 
 func main() {
 	if len(os.Args) != 3 {
-		log.Fatal("Usage: delete-old-files <days> <directory>")
+		log.Fatal("Usage: daily-temp <days> <directory>")
 	}
 	keepDays := os.Args[1]
 
 	keepDaysInt, err := strconv.ParseInt(keepDays, 10, 64)
 	if err != nil {
-		fmt.Println("The first parameter is the days that we wont to keep files. As single integer.")
+		fmt.Println("The first parameter is the days that we wont to keep files. Minimum 1. As single integer.")
 	}
 
 	directory := os.Args[2]

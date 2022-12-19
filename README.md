@@ -1,7 +1,8 @@
 # daily-temp
 Remove files, older than n days.
 
-Usage: daily-temp <days> <directory>
+Usage: `daily-temp <days> <directory>`
 
-Sample: daily-temp 5 c:\mytemp
-Keep all files in the directory "mytemp" that are not older than 5 days.
+Sample: `daily-temp 5 c:\mytemp`
+
+- Delete all files/dirs/sub-dirs in the directory "mytemp" with a creation time older than 5 days.
