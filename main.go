@@ -7,6 +7,7 @@ import (
 	"time"
 	"syscall"
 	"strconv"	
+
 )
 
 var removeCount int
@@ -72,14 +73,14 @@ func deleteOldFiles(directory string, someDaysAgo time.Time) error {
 }
 
 func main() {
-	if len(os.Args) != 3 {
+	if len(os.Args) < 3 {
 		fmt.Println("Usage: daily-temp <days> <directory>")
 		fmt.Println("The first parameter is the days that we wont to keep files. Minimum 1. As single integer. Modification time.")
 		log.Fatal("Parameter error, Exit.")
 	}
 
+	
 	keepDays := os.Args[1]
-
 	keepDaysInt, err := strconv.ParseInt(keepDays, 10, 64)
 	if err != nil {
 		fmt.Println("The first parameter is the days that we wont to keep files. Minimum 1. As single integer. Modification timestamp.")
@@ -88,7 +89,6 @@ func main() {
 	removeCount = 0
 	stayCount = 0
 	
-
 	directory := os.Args[2]
 	keepDaysIntNegative := -(keepDaysInt)
 
@@ -99,6 +99,22 @@ func main() {
 		log.Fatal(err)
 	}
 	
-	fmt.Println("Files/Directorys deleted: "+ strconv.Itoa(removeCount)+", Not touched: "+strconv.Itoa(stayCount))
+	ResultString := "Files/Directorys deleted: "+ strconv.Itoa(removeCount)+", Not touched: "+strconv.Itoa(stayCount)
+	fmt.Println(ResultString)
+	
+	if len(os.Args) > 3 { 			// write log file
+		logString := time.Now().String()+", cut datetime: "+someDaysAgo.String()+", "+ResultString+"\n"
+		
+		file, err := os.OpenFile(os.Args[3], os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+    	if err != nil {
+        	fmt.Println(err)
+        	return
+    	}
+		defer file.Close()
+		if _, err := file.WriteString(logString); err != nil {
+			fmt.Println(err)
+			return
+		}
+	}
 
 }
