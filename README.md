@@ -6,6 +6,7 @@ Usage: `daily-temp <days> <directory>`
 
 Sample: `daily-temp 5 c:\mytemp`
 
-- Delete all files/dirs/sub-dirs in the directory "mytemp" with a modification time older than 5 days.
+- Delete all files/dirs/sub-dirs in the directory "mytemp" with a CREATION time older than 5 days.
 
+Hint: code tested on windows only
  
