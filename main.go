@@ -2,21 +2,44 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
-	"strconv"
 	"time"
+	"syscall"
+	"strconv"	
 )
 
-func deleteOldFiles(directory string, someDaysAgo time.Time) error {
-	files, err := ioutil.ReadDir(directory)
-	if err != nil {
-		return err
-	}
+var removeCount int
+var stayCount int
 
+func deleteOldFiles(directory string, someDaysAgo time.Time) error {
+
+	f, err := os.Open(directory)
+    if err != nil {
+        fmt.Println(err)
+		return err
+    }
+    files, err := f.Readdir(0)
+    if err != nil {
+        fmt.Println(err)
+		return err
+    }
+
+	fmt.Println("Cut datetime: "+someDaysAgo.String())
+	
 	for _, file := range files {
-		if file.ModTime().Truncate(24 * time.Hour).Before(someDaysAgo) {
+		
+		fileInfo, err := os.Stat(directory+"/"+file.Name())				// can be file or directory
+		if err != nil {
+			fmt.Println(err)
+			return err
+		}
+		
+		stat := fileInfo.Sys().(*syscall.Win32FileAttributeData)
+		cTimeSince := time.Unix(0, stat.CreationTime.Nanoseconds())
+		
+		if cTimeSince.Truncate(24*time.Hour).Before(someDaysAgo) {
+			
 			if file.IsDir() {
 				err := deleteOldFiles(directory+"/"+file.Name(), someDaysAgo)
 				if err != nil {
@@ -26,15 +49,23 @@ func deleteOldFiles(directory string, someDaysAgo time.Time) error {
 				if err != nil {
 					return err
 				}
-				fmt.Println("Deleting directory:", file.Name())
+				fmt.Println("Deleting directory:", file.Name() + " ("+cTimeSince.String()+")")
 			} else {
+				
 				err := os.Remove(directory + "/" + file.Name())
 				if err != nil {
 					return err
 				}
-				fmt.Println("Deleting file:", file.Name())
+				fmt.Println("Deleting file:", file.Name() + " ("+cTimeSince.String()+")")
 			}
+			//fmt.Println("Delete: " + cTimeSince.String() + " @ " + file.Name())
+			removeCount = removeCount + 1
+		} else if cTimeSince.Truncate(24*time.Hour).After(someDaysAgo) {
+			// fmt.Println("After: " + cTimeSince.String() + " @ " + file.Name())
+			stayCount = stayCount + 1
 		}
+		
+		
 	}
 
 	return nil
@@ -54,6 +85,10 @@ func main() {
 		fmt.Println("The first parameter is the days that we wont to keep files. Minimum 1. As single integer. Modification timestamp.")
 	}
 
+	removeCount = 0
+	stayCount = 0
+	
+
 	directory := os.Args[2]
 	keepDaysIntNegative := -(keepDaysInt)
 
@@ -63,4 +98,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	
+	fmt.Println("Files/Directorys deleted: "+ strconv.Itoa(removeCount)+", Not touched: "+strconv.Itoa(stayCount))
+
 }
